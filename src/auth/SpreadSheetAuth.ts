@@ -1,11 +1,13 @@
 import { google } from 'googleapis';
-import {authenticate} from '@google-cloud/local-auth';
+// import {authenticate} from '@google-cloud/local-auth';
 import path from 'path';
+import logger from '../utils/logger.js';
 
 async function getAuth(){
+    logger.info('Autenticando API do Google Sheets...')
     
-    const auth = await authenticate({
-        keyfilePath: path.join(process.cwd(), 'credentials.json'),
+    const auth = await new google.auth.GoogleAuth({
+        keyFile: path.join(process.cwd(), 'servaccs-credentials.json'),
         scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
 
@@ -13,7 +15,7 @@ async function getAuth(){
         return google.sheets({ version: 'v4', auth });
 
     } catch (error) {
-        console.error('Erro na autenticação da Conta de Serviço:', error);
+        logger.error(`Erro ao buscar dados da planilha: ${error instanceof Error ? error.message : error}`);
         throw error;
     }
 }
