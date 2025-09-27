@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { wppClient } from '../auth/WWebAuth.js';
+import pkg from 'whatsapp-web.js';
 import logger from '../utils/logger.js';
 
 function getWhatsAppId(phoneNumber: string): string {
@@ -7,10 +7,10 @@ function getWhatsAppId(phoneNumber: string): string {
     return `${phoneNumber}@c.us`; 
 }
 
-export async function sendWppMessage(phone: string, msg: string): Promise<void> {
+export async function sendWppMessage(wppClient: pkg.Client, phone: string, msg: string): Promise<void> {
     
     if (!wppClient.info) {
-        logger.error("Cliente WhatsApp não está pronto ou não foi inicializado.");
+        logger.error("Cliente WhatsApp não foi settado ou não foi inicializado.");
         return;
     }
     
@@ -25,7 +25,7 @@ export async function sendWppMessage(phone: string, msg: string): Promise<void> 
 
         // Envia a mensagem
         await wppClient.sendMessage(chatId, msg);
-        logger.info(`Mensagem enviada com sucesso para ${phone}`);
+        logger.info(`Mensagem: ${msg} \nEnviada com sucesso para ${phone}`);
 
     } catch (error) {
         logger.error(`Falha ao enviar mensagem para ${phone}: ${error}`);
