@@ -25,7 +25,7 @@ export async function sendWppMessage(wppClient: pkg.Client, phone: string, msg: 
 
         // Envia a mensagem
         await wppClient.sendMessage(chatId, msg);
-        logger.info(`Mensagem: ${msg} \nEnviada com sucesso para ${phone}`);
+        logger.info(`Mensagem enviada com sucesso para ${phone}`);
 
     } catch (error) {
         logger.error(`Falha ao enviar mensagem para ${phone}: ${error}`);
