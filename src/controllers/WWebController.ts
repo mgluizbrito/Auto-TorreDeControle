@@ -30,7 +30,10 @@ class WWebController{
         }
     }
 
-    
+    async initMessageListener(): Promise<void>{
+        
+        wppService.setupMessageListener();
+    }
 }
 
 export default WWebController;

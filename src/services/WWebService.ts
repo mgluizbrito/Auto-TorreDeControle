@@ -35,7 +35,7 @@ class WWebService {
     async setupMessageListener(): Promise<void> {
         let activeConversations = new Map<string, 'initial' | 'waiting_for_option'>();
 
-        this.wppClient.on('msg', async msg => {
+        this.wppClient.on('message', async msg => {
             await new Promise(resolve => setTimeout(resolve, Math.random() * 5000 + 5000));
 
             const from = msg.from;
@@ -48,14 +48,9 @@ class WWebService {
             if (activeConversations.has(from)) await processResponse(msg, activeConversations);
             else {
                 
-                const respostaPadrao = `Olá, ${senderName}! Eu sou o Assistente Virtual da Torre de Controle da Diálogo Jundiaí
-                                        Como posso te ajudar no momento? Digite o número da opção desejada:
-                                        1 - Desbloqueio de Caminhão
-                                        2 - Abertura de Baú
-                                        3 - Desativar Alarme
-                                        Por favor, responda apenas com o número da opção, ou se precisar de algo diferente, entre em contato com a Torre de Controle.`;
+                const respostaPadrao = `👋 Olá, *${senderName}*! Eu sou o Assistente Virtual da Torre de Controle - Diálogo ✅\n\nComo posso te ajudar no momento? Digite o número da opção desejada:\n⚠️ 1 - Desbloqueio de Caminhão\n⚠️ 2 - Abertura de Baú\n⚠️ 3 - Desativar Alarme\n\nPor favor, responda apenas com o número da opção, ou se precisar de algo diferente, entre em contato com a Torre de Controle. 🚀`;
                 
-                await msg.reply(respostaPadrao);
+                await this.wppClient.sendMessage(from, respostaPadrao);
                 activeConversations.set(from, 'waiting_for_option'); // Define o estado da conversa para "esperando uma opção"
             }
         });
