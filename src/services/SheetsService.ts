@@ -3,18 +3,18 @@ import { sheets } from '../auth/SpreadSheetAuth.js';
 
 const spreadsheetId = process.env.SPREADSHEET_ID;
 
-export async function getSheetData(range: string): Promise<any[] | null> {
+class SheetsService{
 
-    try {
+    async getSheetData(range: string): Promise<any[]> {
+        
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId,
             range,
         });
 
-        return response.data.values || null;
-        
-    } catch (error) {
-        console.error('Erro ao acessar a planilha:', error);
-        throw error;
+        if (!response.data.values) return [];
+        return response.data.values;
     }
 }
+
+export default SheetsService;
