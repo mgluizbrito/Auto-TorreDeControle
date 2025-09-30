@@ -43,8 +43,9 @@ class WWebService {
             const contact = await msg.getContact();
             const senderName = chat.isGroup ? chat.name : contact.pushname || contact.number;
 
+            if (chat.isGroup) return;
             logger.info(`[MENSAGEM RECEBIDA] De: ${senderName} | Conteúdo: ${msg.body}`);
-            
+
             if (activeConversations.has(from)) await processResponse(msg, activeConversations);
             else {
                 
