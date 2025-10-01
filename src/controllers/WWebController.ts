@@ -12,9 +12,8 @@ class WWebController{
         logger.info('Cliente WhatsApp definido no serviço WWebService.');
     }
 
-    async sendAlertMessageToDriver(driverName: string | undefined, alertMessage: string): Promise<void>{
+    async sendAlertMessageToDriver(driverName: string, alertMessage: string): Promise<void>{
 
-        if (!driverName) return;
         const driverDataArray: string[][] = await SheetsController.getDriverData(driverName);
 
         const driverData: string[] | undefined = driverDataArray[0];
