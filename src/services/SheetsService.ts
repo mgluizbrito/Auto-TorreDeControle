@@ -6,7 +6,7 @@ const MONITORAMENTO_SPREADSHEET_ID = process.env.MONITORAMENTO_SPREADSHEET_ID;
 
 class SheetsService{
 
-    async getMapaSheetData(range: string): Promise<any[]> {
+    static async getMapaSheetData(range: string): Promise<any[]> {
         
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: MAPA_SPREADSHEET_ID,
@@ -17,7 +17,7 @@ class SheetsService{
         return response.data.values;
     }
     
-    async getMonitSheetData(range: string): Promise<any[]>{
+    static async getMonitSheetData(range: string): Promise<any[]>{
         
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: MONITORAMENTO_SPREADSHEET_ID,

@@ -1,7 +1,7 @@
 import pkg from 'whatsapp-web.js';
 import WWebService from '../services/WWebService.js';
 import logger from '../utils/logger.js';
-import {getDriverData} from './SheetsController.js'
+import SheetsController from './SheetsController.js'
 
 let wppService: WWebService;
 
@@ -15,7 +15,7 @@ class WWebController{
     async sendAlertMessageToDriver(driverName: string | undefined, alertMessage: string): Promise<void>{
 
         if (!driverName) return;
-        const driverDataArray: string[][] = await getDriverData(driverName);
+        const driverDataArray: string[][] = await SheetsController.getDriverData(driverName);
 
         const driverData: string[] | undefined = driverDataArray[0];
         if (!driverData) return;
