@@ -1,14 +1,26 @@
 import 'dotenv/config';
 import { sheets } from '../auth/SpreadSheetAuth.js';
 
-const spreadsheetId = process.env.SPREADSHEET_ID;
+const MAPA_SPREADSHEET_ID = process.env.MAPA_TRANF_SPREADSHEET_ID;
+const MONITORAMENTO_SPREADSHEET_ID = process.env.MONITORAMENTO_SPREADSHEET_ID;
 
 class SheetsService{
 
-    async getSheetData(range: string): Promise<any[]> {
+    async getMapaSheetData(range: string): Promise<any[]> {
         
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId,
+            spreadsheetId: MAPA_SPREADSHEET_ID,
+            range,
+        });
+
+        if (!response.data.values) return [];
+        return response.data.values;
+    }
+    
+    async getMonitSheetData(range: string): Promise<any[]>{
+        
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: MONITORAMENTO_SPREADSHEET_ID,
             range,
         });
 
