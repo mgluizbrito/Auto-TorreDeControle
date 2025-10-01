@@ -78,6 +78,45 @@ class SheetsController{
             throw error;
         }
     }
+
+    static async getCurrentTransferByPlate(placa: string): Promise<string[][]>{
+        logger.info(`Buscando tranferência atual da PLACA:: ${placa}`);
+        const range: string = `MM Amazon!B:L`;
+
+        try{
+            const allData: any[] = await SheetsService.getMonitSheetData(range);
+
+            if (!allData || allData.length === 0){
+                logger.warn('Nenhuma transferência vinculada a placa no momento.');
+                return [];
+            }
+
+            const filteredRows = allData.filter(row => {
+                const shPlaca = row[10]; // Coluna L (PLACA)
+                const situation = row[6]; // Coluna H (SITUAÇÃO)
+
+                return row && shPlaca === placa && situation !== 'ENTREGUE' && situation !== 'COLETADO';
+            });
+
+            const mappedData = filteredRows.map(row => {
+                const vrid = row[0]; // Coluna B (VRID)
+                const origin: string = row[1]; // Coluna C (ORIGEM)
+                const destination: string = row[2]; // Coluna D (DESTINO)
+                const situation: string = row[6]; // Coluna H (SITUAÇÃO)
+                const shPlaca: string = row[10]; // Coluna L (PLACA)
+
+                return [vrid, origin, destination, situation, shPlaca];
+            });
+
+            logger.info(`Encontradas ${mappedData.length} transferencias NÃO ENTREGUES, vinculada a PLACA ${placa}`);
+            logger.debug(`Detalhes das tranfs NÃO ENTREGUES: ${JSON.stringify(mappedData)}`);
+            return mappedData;
+        
+        }catch (error){
+            logger.error(`Erro ao buscar dados da planilha: ${error instanceof Error ? error.message : error}`);
+            throw error;
+        }
+    }
 }
 
 export default SheetsController;
