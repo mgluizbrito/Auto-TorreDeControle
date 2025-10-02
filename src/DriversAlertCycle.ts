@@ -22,8 +22,8 @@ export default async function runDriversAlertCycle(wppController: WWebController
 	const today = new Date();
 	const formattedToday = new Intl.DateTimeFormat('pt-BR').format(today);
 
+    // const dailyTransf: string[][] = [["hoje", "Luiz Brito", "18:30", "status"], ["hoje", "Lucas Mathaus", "20:00", "status"], ["hoje", "Jeff", "20:30", "status"]] //MOCK [MUDAR EM SheetsController:81]
     const dailyTransf: string[][] = await SheetsController.getDailyPendingTransfers(formattedToday);
-    // const dailyTransf: string[][] = [["hoje", "Luiz Brito", "17:30", "status"]] //MOCK [MUDAR EM SheetsController:81]
     const upcomingTransf: string[][] = await runScheduler(dailyTransf, timeWindow);
     
     for (const transferencias of upcomingTransf){
@@ -42,6 +42,6 @@ export default async function runDriversAlertCycle(wppController: WWebController
         await new Promise(resolve => setTimeout(resolve, Math.random() * 10000 + 12000)); // cooldown de 12s a 22s para evitar bloqueio do whatsapp
     }
 
-	logger.info(`Ciclo de alertas concluído. Aguardando ${exeCooldown/60000} minutos para o próximo ciclo.`);
+	logger.info(`Ciclo de alertas concluído. Aguardando ${exeCooldown/60000} minutos para o próximo ciclo.\n-----------------*-----------------*-----------------*-----------------`);
 	setTimeout(async () => await runDriversAlertCycle(wppController), exeCooldown);
 }
