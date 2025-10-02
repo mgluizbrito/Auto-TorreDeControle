@@ -1,5 +1,11 @@
-import { wppClient } from '../dist/auth/WWebAuth.js';
+import wppClient from '../dist/auth/WWebAuth.js';
+import WWebController from '../dist/controllers/WWebController.js';
 
-wppClient.on('message_create', (msg: any) => {
-    if (msg.body === 'ping') wppClient.sendMessage(msg.from, 'pong');
-});
+// AGUARDANDO O WWEBJS INICIALIZAR
+while (!wppClient.info) {
+    console.log('Aguardando o cliente WhatsApp estar pronto...')
+    await new Promise(resolve => setTimeout(resolve, 10000));
+}
+
+const controller = new WWebController(wppClient);
+controller.initMessageListener();
