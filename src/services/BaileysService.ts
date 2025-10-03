@@ -35,16 +35,15 @@ class BaileysService {
 
             // Extrai o corpo da mensagem. Baileys é mais complexo que wweb.js
             const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || '';
-            const trimmedBody = body.trim();
             
             if (from.endsWith('@g.us')) return;
 
-            logger.info(`[MENSAGEM RECEBIDA] De: ${from} | Conteúdo: ${trimmedBody}`);
+            logger.info(`[MENSAGEM RECEBIDA] De: ${from} | Conteúdo: ${body.trim()}`);
             
-            await new Promise(resolve => setTimeout(resolve, 1000)); 
+            await new Promise(resolve => setTimeout(resolve, 5500)); 
 
             if (this.activeConversations.has(from)) {
-                await this.processResponse(from, trimmedBody);
+                await this.processResponse(from, body.trim());
 
             } else { 
                 const respostaPadrao = `👋 Olá, Motorista! Eu sou o Assistente Virtual da Torre de Controle - Diálogo ✅\n\nComo posso te ajudar no momento? Digite o número da opção desejada:\n⚠️ 1 - Desbloqueio de Caminhão\n⚠️ 2 - Abertura de Baú\n⚠️ 3 - Desativar Alarme\n\nPor favor, responda apenas com o número da opção, ou se precisar de algo diferente, entre em contato com a Torre de Controle. 🚀`;

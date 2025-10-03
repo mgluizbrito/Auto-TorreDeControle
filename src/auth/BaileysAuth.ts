@@ -3,16 +3,19 @@ import type { WASocket } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import logger from '../utils/logger.js'; 
 import qrcode from 'qrcode-terminal';
+import pino from 'pino';
 
 
 let sock: WASocket | null = null; 
 
 export default async function connectToBaileys(): Promise<WASocket> {
+    logger.info('Iniciando o processo de conexão Baileys (Protocolo Multi-Dispositivo)...');
     const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
 
     // Inicializa o socket Baileys
     sock = makeWASocket({
         auth: state,
+        logger: pino({level: 'silent'}),
         browser: Browsers.macOS('Chrome'),
         getMessage: async (key) => {
             // Lógica para obter mensagens offline, se necessário
@@ -29,7 +32,7 @@ export default async function connectToBaileys(): Promise<WASocket> {
             logger.error(`❌ Conexão Baileys fechada. Tentando reconectar: ${shouldReconnect}`);
             if (shouldReconnect) setTimeout(() => connectToBaileys(), 5000);
 
-        } else if (connection === 'open') logger.info('🎉 Baileys Conectado!');
+        } else if (connection === 'open') logger.info('Baileys conectado com sucesso!');
         
         if (qr) {
             console.log('----------------------------------------------------');
