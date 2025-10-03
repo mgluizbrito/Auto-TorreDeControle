@@ -1,6 +1,6 @@
 import runScheduler from './SchedulerCycle.js';
 import logger from './utils/logger.js';
-import WWebController from './controllers/WWebController.js'
+import BaileysController from './controllers/BaileysController.js'
 import SheetsController from './controllers/SheetsController.js'
 
 let exeCooldown = process.env.EXECUTE_CYCLE_MS ? parseInt(process.env.EXECUTE_CYCLE_MS) : 900000;
@@ -9,7 +9,7 @@ let timeWindow = process.env.TIME_WINDOW_MINUTES ? parseInt(process.env.TIME_WIN
 let alertedDrivers: string[] = [];
 let lastResetTime = new Date();
 
-export default async function runDriversAlertCycle(wppController: WWebController): Promise<void>{
+export default async function runDriversAlertCycle(baileysController: BaileysController): Promise<void>{
 	logger.info("Iniciando ciclo de alertas aos motoristas...");
 
     const currentTime = new Date();
@@ -36,12 +36,12 @@ export default async function runDriversAlertCycle(wppController: WWebController
 		let alertMessage = `⚠️ *ALERTA DE VIAGEM PRÓXIMA* ⚠️\n\nOlá ${name}, você possui uma *coleta agendada para ${presentationTime}*. Por favor, apresente-se na origem e prepare-se para o carregamento.\nCaso já tenha realizado a coleta, por favor, desconsidere esta mensagem.\n\nTorre de Controle - Diálogo Jundiaí\n(Essa é uma mensagem automática, por favor, não responda!)`;
 		logger.info(`Enviando mensagem de alerta para o motorista ${name} sobre coleta às ${presentationTime}`);
 
-    	wppController.sendAlertMessageToDriver(name, alertMessage);
+    	baileysController.sendAlertMessageToDriver(name, alertMessage);
 		alertedDrivers.push(name);
 
         await new Promise(resolve => setTimeout(resolve, Math.random() * 10000 + 12000)); // cooldown de 12s a 22s para evitar bloqueio do whatsapp
     }
 
 	logger.info(`Ciclo de alertas concluído. Aguardando ${exeCooldown/60000} minutos para o próximo ciclo.\n-----------------*-----------------*-----------------*-----------------`);
-	setTimeout(async () => await runDriversAlertCycle(wppController), exeCooldown);
+	setTimeout(async () => await runDriversAlertCycle(baileysController), exeCooldown);
 }

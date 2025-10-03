@@ -1,23 +1,18 @@
-import 'dotenv/config';
-import wppClient from './auth/WWebAuth.js';
-import WWebController from './controllers/WWebController.js';
+import connectToBaileys from './auth/BaileysAuth.js'; 
+import BaileysController from './controllers/BaileysController.js';
 import runDriversAlertCycle from './DriversAlertCycle.js'
 import logger from './utils/logger.js';
+import type { WASocket } from '@whiskeysockets/baileys'; // Para tipagem
 
 async function main(): Promise<void>{
+    logger.info('Iniciando o processo de conexão Baileys (Protocolo Multi-Dispositivo)...');
+    
+	const wppSoket: WASocket = await connectToBaileys();
+    logger.info(`🎉 Cliente Baileys pronto para uso.`);
 
-	// AGUARDANDO O WWEBJS INICIALIZAR
-	while (!wppClient.info) {
-		logger.info('Aguardando o cliente WhatsApp estar pronto...')
-		await new Promise(resolve => setTimeout(resolve, 10000));
-	}
-
-	logger.info(`WWebClient inicializado em main(): ${wppClient.info}`)
-	const wppController = new WWebController(wppClient)
-	await new Promise(resolve => setTimeout(resolve, 10000)); // Mais 10s anti-bloqueio
-	
-	runDriversAlertCycle(wppController);	
-	
+    const controller = new BaileysController(wppSoket);
+    
+    runDriversAlertCycle(controller);
 }
 
 main();
