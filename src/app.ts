@@ -9,6 +9,7 @@ async function main(): Promise<void>{
     
 	const wppSoket: WASocket = await connectToBaileys();
     logger.info(`🎉 Cliente Baileys pronto para uso.`);
+	await new Promise(resolve => setTimeout(resolve, 10000)); // Mais 10s anti-bloqueio
 
     const controller = new BaileysController(wppSoket);
     
