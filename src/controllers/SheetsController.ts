@@ -58,14 +58,13 @@ class SheetsController{
                 return row && row[0] === driverName;
             });
 
-            if (findedDriver.length === 0) {
-                logger.warn(`Motorista ${driverName} não encontrado na planilha.`);
-                return [];
-            }
+            if (findedDriver.length === 0) return [];
 
             const finalData = findedDriver.map(row => {
 
                 const name: string = row[0]; // Coluna D: índice 0
+
+                if (!row[4]) return[];
                 const phone: string = row[4].replace("+", ""); // Coluna H: índice 4
                 
                 return [name, phone];

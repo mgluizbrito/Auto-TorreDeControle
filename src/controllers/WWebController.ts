@@ -24,7 +24,7 @@ class WWebController{
             wppService.sendWppMessage(driverData[1], alertMessage);
 
         } else {
-            logger.warn(`Número de telefone não encontrado para o motorista: ${driverName}`);
+            logger.warn(`Motorista: ${driverName}, ou número de telefone não encontrado`);
             return;
         }
     }
