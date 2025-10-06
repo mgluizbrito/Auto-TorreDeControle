@@ -28,7 +28,7 @@ class BaileysController {
 
     async initMessageListener(): Promise<void> {
         
-        wppService.setupMessageListener();
+        await wppService.setupMessageListener();
     }
 }
 
