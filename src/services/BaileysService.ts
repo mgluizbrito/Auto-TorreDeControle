@@ -1,10 +1,12 @@
 import 'dotenv/config';
 import type { WASocket } from '@whiskeysockets/baileys'; // Importa o tipo correto do Baileys
 import logger from '../utils/logger.js';
+import ConversationState from './utils/ConversationState.js';
+import type { ActiveConversation } from './utils/ActiveConversationType.js';
 
 class BaileysService {
     waSocket: WASocket; 
-    activeConversations = new Map<string, 'waiting_for_option'>();
+    activeConversations = new Map<string, ActiveConversation>();
 
     constructor(socket: WASocket) {
         this.waSocket = socket;
@@ -30,77 +32,162 @@ class BaileysService {
 
             if (!msg || !msg.message || msg.key.fromMe) return; 
 
-            const from = msg.key.remoteJid; 
-            if (!from) return;
+            const from = msg.key.remoteJid;
+            if (!from || from.endsWith('@g.us')) return;
 
             // Extrai o corpo da mensagem. Baileys é mais complexo que wweb.js
             const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || '';
+            const trimmedBody = body.trim().toUpperCase(); // Padroniza a resposta
             
-            if (from.endsWith('@g.us')) return;
+            logger.info(`[MENSAGEM RECEBIDA] De: ${from} | Conteúdo: ${trimmedBody}`);
 
-            logger.info(`[MENSAGEM RECEBIDA] De: ${from} | Conteúdo: ${body.trim()}`);
-            
-            await new Promise(resolve => setTimeout(resolve, 5500)); 
+            await new Promise(resolve => setTimeout(resolve, 5500));
 
-            if (this.activeConversations.has(from)) {
-                await this.processResponse(from, body.trim());
+            const currentConv = this.activeConversations.get(from);
 
-            } else { 
+            if (currentConv) {
+                await this.processResponse(from, trimmedBody, currentConv);
+
+            } else {
                 const respostaPadrao = `👋 Olá, Motorista! Eu sou o Assistente Virtual da Torre de Controle - Diálogo ✅\n\nComo posso te ajudar no momento? Digite o número da opção desejada:\n⚠️ 1 - Desbloqueio de Caminhão\n⚠️ 2 - Abertura de Baú\n⚠️ 3 - Desativar Alarme\n\nPor favor, responda apenas com o número da opção, ou se precisar de algo diferente, entre em contato com a Torre de Controle. 🚀`;
 
                 await this.waSocket.sendMessage(from, { text: respostaPadrao });
-                this.activeConversations.set(from, 'waiting_for_option');
+                this.activeConversations.set(from, { state: ConversationState.WAITING_FOR_OPTION, selectedOption: '' });
             }
         });
 
         logger.info('✅ Listener de mensagens Baileys configurado com sucesso.');
     }
 
-    // --- MÉTODOS DE RESPOSTA E AÇÃO (MOVIDOS PARA DENTRO DA CLASSE) ---
+    // --- MÉTODOS DE RESPOSTA E AÇÃO (FLUXO DE MÚLTIPLAS ETAPAS) ---
 
-    private async processResponse(from: string, response: string): Promise<void>{
+    private async processResponse(from: string, response: string, currentConv: ActiveConversation): Promise<void> {
         const sendMsg = (text: string) => this.waSocket.sendMessage(from, { text: text });
         
-        switch(response){
-            case '1':
-                await this.handleDesbloquear(from);
-                await sendMsg('Sua solicitação de desbloqueio foi recebida. Entraremos em contato em breve.');
-                this.activeConversations.delete(from);
+        switch (currentConv.state) {
+            
+            // ------------------------------------
+            // ETAPA 1: AGUARDANDO OPÇÃO DO MENU
+            // ------------------------------------
+            case ConversationState.WAITING_FOR_OPTION:
+                if (['1', '2', '3'].includes(response)) {
+                    // Atualiza o estado para a próxima etapa (Placa)
+                    this.activeConversations.set(from, { 
+                        state: ConversationState.WAITING_FOR_PLATE, 
+                        selectedOption: response 
+                    });
+                    await sendMsg('Certo! Para darmos prosseguimento, por favor, **digite a PLACA** do caminhão:');
+                } else {
+                    await sendMsg('Opção inválida. Por favor, responda APENAS com 1, 2 ou 3.');
+                }
                 break;
 
-            case '2':
-                await this.handleAbrirBau(from);
-                await sendMsg('Sua solicitação para abrir o baú foi processada. Tenha um bom dia!');
-                this.activeConversations.delete(from);
-                break;
+            // ------------------------------------
+            // ETAPA 2: AGUARDANDO PLACA
+            // ------------------------------------
+            case ConversationState.WAITING_FOR_PLATE:
+                const plate = response.replace(/[^A-Z0-9]/g, ''); // Limpa a placa (remove hífens, etc.)
+                
+                // 1. Simula a busca da viagem
+                const trip = await this.findTripByPlate(plate);
 
-            case '3':
-                await this.handleSolicitarChamado(from);
-                await sendMsg('A equipe de suporte foi notificada. Eles retornarão o contato assim que possível.');
-                this.activeConversations.delete(from);
+                if (trip) {
+                    // 2. Se a viagem for encontrada, avança para a confirmação
+                    this.activeConversations.set(from, {
+                        ...currentConv,
+                        state: ConversationState.CONFIRMING_TRIP,
+                        plate: plate,
+                        tripData: trip
+                    });
+                    
+                    const confirmationMsg = `Encontramos uma viagem para a placa *${plate}*:\n\n*Destino:* ${trip.destination}\n*Carga:* ${trip.cargo}\n\n**Esta é a sua viagem?**\n(Responda **SIM** ou **NAO** para confirmar.)`;
+                    await sendMsg(confirmationMsg);
+
+                } else {
+                    // 3. Se a viagem NÃO for encontrada, encerra ou pede novamente
+                    await sendMsg(`Não foi possível encontrar uma viagem ativa para a placa *${plate}*. Por favor, verifique a placa e tente novamente, ou digite o número da opção do menu inicial.`);
+                    this.activeConversations.set(from, { state: ConversationState.WAITING_FOR_OPTION, selectedOption: '' }); // Volta ao menu
+                }
+                break;
+            
+            // ------------------------------------
+            // ETAPA 3: CONFIRMANDO VIAGEM
+            // ------------------------------------
+            case ConversationState.CONFIRMING_TRIP:
+                if (response === 'SIM') {
+                    // Viagem confirmada, chama o handler correto
+                    await this.executeAction(from, currentConv.selectedOption, currentConv.tripData);
+                    this.activeConversations.delete(from); // Encerra a conversa
+                    
+                } else if (response === 'NAO') {
+                    await sendMsg('Tudo bem. Por favor, entre em contato com a Torre de Controle se a viagem estiver incorreta. A conversa será encerrada.');
+                    this.activeConversations.delete(from); // Encerra a conversa
+
+                } else {
+                    await sendMsg('Resposta inválida. Por favor, responda apenas **SIM** ou **NAO**.');
+                }
                 break;
 
             default:
-                await sendMsg('Opção inválida. Por favor, responda APENAS com 1, 2 ou 3.');
+                this.activeConversations.delete(from);
+                break;
+        }
+    }
+    
+    // --- FUNÇÃO CENTRAL PARA EXECUTAR AÇÃO ---
+
+    private async executeAction(from: string, option: string, tripData: any): Promise<void> {
+        const sendMsg = (text: string) => this.waSocket.sendMessage(from, { text: text });
+
+        switch(option){
+            case '1':
+                await this.handleDesbloquear(from, tripData);
+                await sendMsg(`✅ **SOLICITAÇÃO DE DESBLOQUEIO RECEBIDA** para a viagem: ${tripData.destination}. Entraremos em contato em breve.`);
+                break;
+            case '2':
+                await this.handleAbrirBau(from, tripData);
+                await sendMsg(`✅ **SOLICITAÇÃO DE ABERTURA DE BAÚ PROCESSADA** para a viagem: ${tripData.destination}. Tenha um bom dia!`);
+                break;
+            case '3':
+                await this.handleSolicitarChamado(from, tripData);
+                await sendMsg(`✅ **SOLICITAÇÃO DE CHAMADO NOTIFICADA** para a viagem: ${tripData.destination}. Nossa equipe de suporte foi avisada.`);
                 break;
         }
     }
 
-    // --- FUNÇÕES DE AÇÃO ---
 
-    private async handleAbrirBau(from: string) {
-        logger.info(`AÇÃO: Motorista ${from} solicitou a abertura do baú.`);
-        // [ADICIONE A LÓGICA DE NEGÓCIO AQUI]
+    // --- FUNÇÕES DE BUSCA E AÇÃO (MOCKUP) ---
+
+    // [NOVA FUNÇÃO DE BUSCA]
+    private async findTripByPlate(plate: string): Promise<any | null> {
+        logger.info(`BUSCA: Tentando encontrar viagem para a placa: ${plate}`);
+        
+        // --- LÓGICA DE NEGÓCIO: CHAME SEU SERVIÇO DE BANCO DE DADOS/PLANILHA AQUI ---
+        // Exemplo: Simula que só encontra a viagem se a placa for "ABC1234"
+        if (plate === 'ABC1234') {
+            return {
+                destination: 'São Paulo - SP',
+                cargo: 'Eletrônicos',
+                tripId: 'TRP-10025',
+            };
+        }
+        return null;
+        // --------------------------------------------------------------------------
     }
 
-    private async handleDesbloquear(from: string) {
-        logger.info(`AÇÃO: Motorista ${from} solicitou o desbloqueio.`);
-        // [ADICIONE A LÓGICA DE NEGÓCIO AQUI]
+    private async handleAbrirBau(from: string, tripData: any) {
+        logger.info(`AÇÃO: Motorista ${from} solicitou a abertura do baú na viagem ${tripData.tripId}.`);
+        // LÓGICA DE ABERTURA AQUI (e.g., chamada API da Torre de Controle)
     }
 
-    private async handleSolicitarChamado(from: string) {   
-        logger.info(`AÇÃO: Motorista ${from} solicitou um chamado.`);
-        // [ADICIONE A LÓGICA DE NEGÓCIO AQUI]
+    private async handleDesbloquear(from: string, tripData: any) {
+        logger.info(`AÇÃO: Motorista ${from} solicitou o desbloqueio na viagem ${tripData.tripId}.`);
+        // LÓGICA DE DESBLOQUEIO AQUI
+    }
+
+    private async handleSolicitarChamado(from: string, tripData: any) {   
+        logger.info(`AÇÃO: Motorista ${from} solicitou um chamado na viagem ${tripData.tripId}.`);
+        // LÓGICA DE CHAMADO AQUI
     }
 }
 
