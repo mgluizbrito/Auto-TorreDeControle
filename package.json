@@ -30,6 +30,7 @@
     "@whiskeysockets/baileys": "^6.7.20",
     "dotenv": "^17.2.2",
     "googleapis": "^105.0.0",
+    "node-cron": "^4.2.1",
     "qrcode-terminal": "^0.12.0",
     "winston": "^3.17.0"
   },
