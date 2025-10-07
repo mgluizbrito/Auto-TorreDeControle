@@ -3,6 +3,9 @@ import BaileysController from './controllers/BaileysController.js';
 import runDriversAlertCycle from './DriversAlertCycle.js'
 import logger from './utils/logger.js';
 import type { WASocket } from '@whiskeysockets/baileys'; // Para tipagem
+import cron from 'node-cron';
+
+const alertCycleCooldown_MS = process.env.EXECUTE_CYCLE_MS ? parseInt(process.env.EXECUTE_CYCLE_MS) : 900000;
 
 async function main(): Promise<void>{
     logger.info('INICIANDO MAIN - AUTOMAÇÃO - TORRE DE CONTROLE');
@@ -12,7 +15,9 @@ async function main(): Promise<void>{
 
     const controller = new BaileysController(wppSoket);
     
-    runDriversAlertCycle(controller);
+
+    cron.schedule(`*/${(alertCycleCooldown_MS / 60000)} * * * *`, async () => await runDriversAlertCycle(controller));
+    
 }
 
 main();
