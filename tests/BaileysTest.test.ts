@@ -2,6 +2,7 @@ import type { WASocket } from '@whiskeysockets/baileys';
 import connectToBaileys from '../dist/auth/BaileysAuth.js';
 import BaileysService from '../dist/services/BaileysService.js' 
 import BailyesController from '../dist/controllers/BaileysController.js';
+import { sendErrorEmail } from '../dist/utils/EmailSender.js';
 
 async function clientTest(): Promise<void> {
     
@@ -15,8 +16,15 @@ async function clientTest(): Promise<void> {
     const controller = new BailyesController(wppClient);
     const service = new BaileysService(wppClient);
     
-    await service.sendWppMessage("5511913188992", `${new Date().toUTCString} | TESTE ENVIO MSG LUIZ BRITO`);
-    await controller.initMessageListener(); 
+
+    try{        
+        await controller.initMessageListener();
+        service.sendWppMessage("5511913188992", `${new Date().toUTCString()} | TESTE ENVIO MSG LUIZ BRITO`);
+    
+    }catch(error){
+        await sendErrorEmail("FALHA na AUTOMAÇÃO", ((error instanceof Error ? error : new Error(String(error))).stack || (error instanceof Error ? error : new Error(String(error))).message));
+    }
+
 }
 
 clientTest();

@@ -12,6 +12,8 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendErrorEmail(subject: string, errorDetails: string): Promise<void> {
+    logger.warn("Enviando email de erro para o QA Desenvolvedor");
+
     const adminEmail = process.env.ADMIN_EMAIL;
     const emailUser = process.env.EMAIL_USER;
 
@@ -35,7 +37,7 @@ Por favor, verifique o sistema imediatamente.`,
 
     try {
         await transporter.sendMail(mailOptions);
-        logger.error(`Email de alerta de erro enviado para ${adminEmail}`);
+        logger.warn(`Email de alerta de erro enviado para ${adminEmail}`);
     } catch (error) {
         // Se falhar ao enviar o email, apenas loga e nao quebra o processo.
         logger.error(`Falha ao enviar o email de erro. Verifique as credenciais SMTP: ${error}`);
