@@ -68,7 +68,7 @@ class SheetsController{
                 if (!row[4]) return[];
                 const phone: string = row[4].replace("+", ""); // Coluna H: índice 4
                 
-                return [name, "5511913188992"];
+                return [name, phone];
             });
 
             return finalData;

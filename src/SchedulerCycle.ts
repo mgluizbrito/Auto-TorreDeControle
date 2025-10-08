@@ -23,10 +23,10 @@ export default async function runScheduler(dailyTransf: string[][], timeWindow: 
 
         if (isWithinTimeWindow(scheduledDate, timeWindow)) {
 
-            logger.info(`Motorista ${driverName} com horário de apresentação às ${presentationTime} está dentro da janela`);
+            logger.info(`Motorista ${driverName} com horário de apresentação às ${presentationTime} (${origin}) está dentro da janela`);
             upcomingTransfers.push(transfer);
 
-        }else logger.debug(`Viagem do motorista ${driverName} com horário de apresentação às ${presentationTime} está fora da janela de ${timeWindow} minutos.`);
+        }else logger.debug(`Viagem do motorista ${driverName} com horário de apresentação às ${presentationTime} (${origin}) está fora da janela de ${timeWindow} minutos.`);
     }
     
     logger.info("Ciclo de verificação concluído.");
