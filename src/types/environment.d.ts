@@ -11,6 +11,7 @@ declare namespace NodeJS {
         EMAIL_USER: string;
         EMAIL_PASS: string;
         ADMIN_EMAIL: string;
+        LEAD_EMAIL: string;
         
         CLIENT_ID: string;
         CLIENT_SECRET: string;
