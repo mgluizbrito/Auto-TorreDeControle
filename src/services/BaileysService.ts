@@ -76,7 +76,7 @@ class BaileysService {
                         state: ConversationState.WAITING_FOR_PLATE, 
                         selectedOption: response 
                     });
-                    await sendMsg('Certo! Para darmos prosseguimento, por favor, **digite a PLACA** do caminhão:');
+                    await sendMsg('Certo! Para darmos prosseguimento, por favor, *digite a PLACA* do caminhão:');
                 } else {
                     await sendMsg('Opção inválida. Por favor, responda APENAS com 1, 2 ou 3.');
                 }
@@ -100,7 +100,7 @@ class BaileysService {
                         tripData: trip
                     });
                     
-                    const confirmationMsg = `Encontramos uma viagem para a placa *${plate}*:\n\n*Destino:* ${trip.destination}\n*Carga:* ${trip.cargo}\n\n**Esta é a sua viagem?**\n(Responda **SIM** ou **NAO** para confirmar.)`;
+                    const confirmationMsg = `Encontramos uma viagem para a placa *${plate}*:\n\nVRID:${trip.vrid}\nROTA: ${trip.origin} -> ${trip.destination}\n\n**Esta é a sua viagem?**\n(Responda *SIM* ou *NAO* para confirmar.)`;
                     await sendMsg(confirmationMsg);
 
                 } else {
@@ -124,7 +124,7 @@ class BaileysService {
                     this.activeConversations.delete(from); // Encerra a conversa
 
                 } else {
-                    await sendMsg('Resposta inválida. Por favor, responda apenas **SIM** ou **NAO**.');
+                    await sendMsg('Resposta inválida. Por favor, responda apenas *SIM* ou *NAO*.');
                 }
                 break;
 
@@ -142,15 +142,15 @@ class BaileysService {
         switch(option){
             case '1':
                 await this.handleDesbloquear(from, tripData);
-                await sendMsg(`✅ **SOLICITAÇÃO DE DESBLOQUEIO RECEBIDA** para a viagem: ${tripData.destination}. Entraremos em contato em breve.`);
+                await sendMsg(`✅ *SOLICITAÇÃO DE DESBLOQUEIO RECEBIDA* para a viagem: ${tripData.destination}. Entraremos em contato em breve.`);
                 break;
             case '2':
                 await this.handleAbrirBau(from, tripData);
-                await sendMsg(`✅ **SOLICITAÇÃO DE ABERTURA DE BAÚ PROCESSADA** para a viagem: ${tripData.destination}. Tenha um bom dia!`);
+                await sendMsg(`✅ *SOLICITAÇÃO DE ABERTURA DE BAÚ PROCESSADA* para a viagem: ${tripData.destination}. Tenha um bom dia!`);
                 break;
             case '3':
                 await this.handleSolicitarChamado(from, tripData);
-                await sendMsg(`✅ **SOLICITAÇÃO DE CHAMADO NOTIFICADA** para a viagem: ${tripData.destination}. Nossa equipe de suporte foi avisada.`);
+                await sendMsg(`✅ *SOLICITAÇÃO DE CHAMADO NOTIFICADA* para a viagem: ${tripData.destination}. Nossa equipe de suporte foi avisada.`);
                 break;
         }
     }
@@ -166,9 +166,9 @@ class BaileysService {
         // Exemplo: Simula que só encontra a viagem se a placa for "ABC1234"
         if (plate === 'ABC1234') {
             return {
-                destination: 'São Paulo - SP',
-                cargo: 'Eletrônicos',
-                tripId: 'TRP-10025',
+                origin: 'POA1',
+                destination: 'DRS5',
+                vrid: 'VRID123456',
             };
         }
         return null;
@@ -176,17 +176,17 @@ class BaileysService {
     }
 
     private async handleAbrirBau(from: string, tripData: any) {
-        logger.info(`AÇÃO: Motorista ${from} solicitou a abertura do baú na viagem ${tripData.tripId}.`);
+        logger.info(`AÇÃO: Motorista ${from} solicitou a abertura do baú na viagem ${tripData.vrid}.`);
         // LÓGICA DE ABERTURA AQUI (e.g., chamada API da Torre de Controle)
     }
 
     private async handleDesbloquear(from: string, tripData: any) {
-        logger.info(`AÇÃO: Motorista ${from} solicitou o desbloqueio na viagem ${tripData.tripId}.`);
+        logger.info(`AÇÃO: Motorista ${from} solicitou o desbloqueio na viagem ${tripData.vrid}.`);
         // LÓGICA DE DESBLOQUEIO AQUI
     }
 
     private async handleSolicitarChamado(from: string, tripData: any) {   
-        logger.info(`AÇÃO: Motorista ${from} solicitou um chamado na viagem ${tripData.tripId}.`);
+        logger.info(`AÇÃO: Motorista ${from} solicitou um chamado na viagem ${tripData.vrid}.`);
         // LÓGICA DE CHAMADO AQUI
     }
 }
