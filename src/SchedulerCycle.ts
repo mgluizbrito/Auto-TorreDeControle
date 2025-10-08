@@ -16,7 +16,7 @@ export default async function runScheduler(dailyTransf: string[][], timeWindow: 
     logger.debug(`Verificando viagens PENDENTES dos próximos ${timeWindow} minutos.`);
 
     for (const transfer of dailyTransf) {
-        const [date, driverName, presentationTime, status] = transfer;
+        const [date, origin, driverName, presentationTime, status] = transfer;
 
         // Cria o objeto Date completo para a comparação
         const scheduledDate = createScheduledDate(presentationTime);

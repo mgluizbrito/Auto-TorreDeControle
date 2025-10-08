@@ -25,11 +25,12 @@ class SheetsController{
             const finalData = filteredRows.map(row => {
 
                 const date = row[0]; // Coluna A: índice 0
+                const origin = row[1]; // Coluna B: índice 1
                 const driverName: string = row[13]; // Coluna N: índice 13
                 const presentationTime: string = row[18]; // Coluna S: índice 18
                 const status = row[26]; // Coluna AA: índice 26
 
-                return [date, driverName, presentationTime, status];
+                return [date, origin, driverName, presentationTime, status];
             });
             
             logger.info(`Encontradas ${finalData.length} viagens PENDENTES`);
@@ -67,7 +68,7 @@ class SheetsController{
                 if (!row[4]) return[];
                 const phone: string = row[4].replace("+", ""); // Coluna H: índice 4
                 
-                return [name, phone];
+                return [name, "5511913188992"];
             });
 
             return finalData;

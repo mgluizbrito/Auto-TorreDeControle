@@ -27,16 +27,16 @@ export default async function runDriversAlertCycle(baileysController: BaileysCon
     
     for (const transferencias of upcomingTransf){
 
-		const [date, name, presentationTime, status] = transferencias;
+		const [date, origin, driverName, presentationTime, status] = transferencias;
 
-		if (name === undefined || presentationTime === undefined) continue;
-		if (alertedDrivers.includes(name)){ logger.info(`Motorista ${name} já foi alertado nas ultimas 2 horas. Pulando...`); continue; }
+		if (driverName === undefined || presentationTime === undefined) continue;
+		if (alertedDrivers.includes(driverName)){ logger.info(`Motorista ${driverName} já foi alertado nas ultimas 2 horas. Pulando...`); continue; }
         
-		let alertMessage = `⚠️ *ALERTA DE VIAGEM PRÓXIMA* ⚠️\n\nOlá ${name}, você possui uma *coleta agendada para ${presentationTime}*. Por favor, apresente-se na origem e prepare-se para o carregamento.\nCaso já tenha realizado a coleta, por favor, desconsidere esta mensagem.\n\nTorre de Controle - Diálogo Jundiaí\n(Essa é uma mensagem automática, por favor, não responda!)`;
-		logger.info(`Enviando mensagem de alerta para o motorista ${name} sobre coleta às ${presentationTime}`);
+		let alertMessage = `Olá, ${driverName}!\n\nPassando pra te lembrar do seu carregamento às ${presentationTime} em ${origin} 😎🚚.\n\n✅Boas práticas:\n- Garanta que você está seguindo os endereços e horários da programação.\n- Chegar com 1h de antecedência em relação ao horário de carregamento, para evitar atrasos com a portaria ou filas de veículos.\n- Verifique a limpeza do baú do seu veículo.\n- Envie as fotos dos papeis de carregamento entregues após serem entregues a você.\n\n⛑️BRSipa:\nPara garantir a sua segurança e dos demais ao seu redor, existe o programa *BRSipa*. Cada excesso de velocidade ou de jornada você receberá pontos.\n\nVelocidade:\n90 ~ 91km/h = 2pts.\n101 ~ 110km/h = 6pts.\n111 ~ 120km/h = 10pts.\n+120 km/h = 18pts.\n\nJornada:\nTempo máximo de direção = 5h30min\nA cada 30min excedentes = 5pts.\n\n*O motorista que tiver mais de 90pts será BLOQUEADO e precisará passar por reciclagem.*\n\n📞Contato:\nhttps://sandwiche.me/contatostorredecontrole\n\nBoa viagem! (Essa é uma mensagem automática, por favor, não responda!)`;
+		logger.info(`Enviando mensagem de alerta para o motorista ${driverName} sobre coleta às ${presentationTime}`);
 
-    	baileysController.sendAlertMessageToDriver(name, alertMessage);
-		alertedDrivers.push(name);
+    	baileysController.sendAlertMessageToDriver(driverName, alertMessage);
+		alertedDrivers.push(driverName);
 
         await new Promise(resolve => setTimeout(resolve, Math.random() * 10000 + 12000)); // cooldown de 12s a 22s para evitar bloqueio do whatsapp
     }
