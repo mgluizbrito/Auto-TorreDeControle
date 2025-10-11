@@ -20,10 +20,13 @@ export default async function runDriversAlertCycle(baileysController: BaileysCon
     }
 
 	const today = new Date();
+    const tomorrow = new Date().setDate(today.getDate() + 1);
 	const formattedToday = new Intl.DateTimeFormat('pt-BR').format(today);
+	const formattedTomorrow = new Intl.DateTimeFormat('pt-BR').format(tomorrow);
 
     const dailyTransf: string[][] = await SheetsController.getDailyPendingTransfers(formattedToday);
-    const upcomingTransf: string[][] = await runScheduler(dailyTransf, timeWindow);
+    const tomorrowTransf: string[][] = await SheetsController.getDailyPendingTransfers(formattedTomorrow);
+    const upcomingTransf: string[][] = await runScheduler(dailyTransf.concat(tomorrowTransf), timeWindow);
     
     for (const transferencias of upcomingTransf){
 

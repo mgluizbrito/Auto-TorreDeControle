@@ -19,7 +19,7 @@ export default async function runScheduler(dailyTransf: string[][], timeWindow: 
         const [date, origin, driverName, presentationTime, status] = transfer;
 
         // Cria o objeto Date completo para a comparação
-        const scheduledDate = createScheduledDate(presentationTime);
+        const scheduledDate = createScheduledDate(date, presentationTime);
 
         if (isWithinTimeWindow(scheduledDate, timeWindow)) {
 
@@ -39,20 +39,18 @@ export default async function runScheduler(dailyTransf: string[][], timeWindow: 
 /**
  * Converte o horário de apresentação (HH:mm) para um objeto Date completo (hoje + horário).
  */
-function createScheduledDate(presentationTime: string | undefined): Date {
+function createScheduledDate(dateString: string | undefined, presentationTime: string | undefined): Date {
     const today = new Date();
-    if (!presentationTime) {
-        logger.warn('Horário de apresentação indefinido.');
-        return today;
-    }
+    if (!presentationTime || !dateString) return today;
 
+    const [day, month, year] = dateString.split('/').map(Number);
     const [hours, minutes] = presentationTime.split(':').map(Number);
     
     // Cria um novo objeto Date com a data de hoje, mas com o horário de apresentação
     const scheduledDate = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
+        year? year : today.getFullYear(),
+        month? month - 1 : today.getMonth(),
+        day,
         hours,
         minutes,
         0 // Segundos
@@ -66,11 +64,8 @@ function createScheduledDate(presentationTime: string | undefined): Date {
  */
 function isWithinTimeWindow(scheduledDate: Date, timeWindow: number): boolean {
     const currentTime = new Date();
-    
-    // Calcula a diferença em milissegundos
+
     const diffMs = scheduledDate.getTime() - currentTime.getTime();
-    
-    // Converte para minutos
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
     
     // Condições:
