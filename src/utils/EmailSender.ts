@@ -4,7 +4,9 @@ import 'dotenv/config';
 
 // Configuracao do Nodemailer (usando SMTP configurado pelas variaveis de ambiente)
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // Troque por outro servico (ex: 'Outlook') ou defina o host/porta SMTP
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    secure: false,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
