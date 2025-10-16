@@ -15,6 +15,7 @@ export default async function connectToBaileys(): Promise<WASocket> {
     // Inicializa o socket Baileys
     sock = makeWASocket({
         auth: state,
+        version: [2, 3000, 1025190524],
         logger: pino({level: 'silent'}),
         browser: Browsers.macOS('Chrome'),
         getMessage: async (key) => {
