@@ -4,6 +4,7 @@ servaccs-credentials.json
 .wwebjs_cache
 .wwebjs_auth
 baileys_auth_info
+auto_torre.db
 logs
 
 # Created by https://www.toptal.com/developers/gitignore/api/node
