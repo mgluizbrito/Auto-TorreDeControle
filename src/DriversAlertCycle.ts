@@ -2,6 +2,7 @@ import runScheduler from './SchedulerCycle.js';
 import logger from './utils/logger.js';
 import BaileysController from './controllers/BaileysController.js'
 import SheetsController from './controllers/SheetsController.js'
+import * as conn from './sqlite/DriverPersistence.js';
 
 let exeCooldown = process.env.EXECUTE_CYCLE_MS ? parseInt(process.env.EXECUTE_CYCLE_MS) : 900000;
 let timeWindow = process.env.TIME_WINDOW_MINUTES ? parseInt(process.env.TIME_WINDOW_MINUTES) : 90;
@@ -12,10 +13,17 @@ let lastResetTime = new Date();
 export default async function runDriversAlertCycle(baileysController: BaileysController): Promise<void>{
 	logger.info("Iniciando ciclo de alertas aos motoristas...");
 
+    if (alertedDrivers.length === 0) {
+        alertedDrivers = await conn.loadAlertedDrivers();
+        logger.info(`Carregados ${alertedDrivers.length} motoristas alertados do banco de dados.`);
+    }
+
     const currentTime = new Date();
     if (currentTime.getTime() - lastResetTime.getTime() >= (2 * 60 * 60 * 1000)) { // Se passaram mais de 2 horas desde o último reset, reseta a lista
         alertedDrivers = [];
         lastResetTime = currentTime;
+
+        await conn.resetAllAlertedDrivers();
         logger.info("Lista de motoristas alertados foi resetada.");
     }
 
@@ -39,7 +47,9 @@ export default async function runDriversAlertCycle(baileysController: BaileysCon
 		logger.info(`Enviando mensagem de alerta para o motorista ${driverName} sobre coleta às ${presentationTime}`);
 
     	baileysController.sendAlertMessageToDriver(driverName, alertMessage);
-		alertedDrivers.push(driverName);
+		
+        alertedDrivers.push(driverName);
+        await conn.addAlertedDriver(driverName);
 
         await new Promise(resolve => setTimeout(resolve, Math.random() * 10000 + 12000)); // cooldown de 12s a 22s para evitar bloqueio do whatsapp
     }
