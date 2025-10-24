@@ -3,7 +3,6 @@ import type { WASocket } from '@whiskeysockets/baileys'; // Importa o tipo corre
 import logger from '../utils/logger.js';
 import ConversationState from './utils/ConversationState.js';
 import type { ActiveConversation } from './utils/ActiveConversationType.js';
-import ResponseProcessor from './utils/ResponseProcessor.js';
 
 class BaileysService {
     waSocket: WASocket; 
@@ -46,17 +45,10 @@ class BaileysService {
 
             await new Promise(resolve => setTimeout(resolve, 5500));
 
-            const currentConv = this.activeConversations.get(from);
+            const respostaPadrao = `👋 Olá, Motorista! Eu sou o Assistente Virtual da Torre de Controle - Diálogo ✅\n\nComo posso te ajudar no momento? Digite o número da opção desejada:\n⚠️ 1 - Desbloqueio de Caminhão\n⚠️ 2 - Abertura de Baú\n⚠️ 3 - Desativar Alarme\n\nPor favor, responda apenas com o número da opção, ou se precisar de algo diferente, entre em contato com a Torre de Controle. 🚀`;
 
-            if (currentConv) {
-                await new ResponseProcessor(this.waSocket, this.activeConversations).processResponse(from, trimmedBody, currentConv);
-
-            } else {
-                const respostaPadrao = `👋 Olá, Motorista! Eu sou o Assistente Virtual da Torre de Controle - Diálogo ✅\n\nComo posso te ajudar no momento? Digite o número da opção desejada:\n⚠️ 1 - Desbloqueio de Caminhão\n⚠️ 2 - Abertura de Baú\n⚠️ 3 - Desativar Alarme\n\nPor favor, responda apenas com o número da opção, ou se precisar de algo diferente, entre em contato com a Torre de Controle. 🚀`;
-
-                await this.waSocket.sendMessage(from, { text: respostaPadrao });
-                this.activeConversations.set(from, { state: ConversationState.WAITING_FOR_OPTION, selectedOption: '' });
-            }
+            await this.waSocket.sendMessage(from, { text: respostaPadrao });
+            this.activeConversations.set(from, { state: ConversationState.WAITING_FOR_OPTION, selectedOption: '' });
         });
 
         logger.info('✅ Listener de mensagens Baileys configurado com sucesso.');
