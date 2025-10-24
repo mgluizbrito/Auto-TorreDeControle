@@ -19,6 +19,7 @@ async function main(): Promise<void>{
     
     try{
         await initializeDatabase();
+        await controller.initMessageListener();
         await runDriversAlertCycle(controller);
         
         cron.schedule(`*/${(alertCycleCooldown_MS / 60000)} * * * *`, async () => await runDriversAlertCycle(controller));
