@@ -45,7 +45,7 @@ class BaileysService {
 
             await new Promise(resolve => setTimeout(resolve, 5500));
 
-            const respostaPadrao = `👋 Olá, Motorista! Eu sou o Assistente Virtual da Torre de Controle - Diálogo ✅\n\nComo posso te ajudar no momento? Digite o número da opção desejada:\n⚠️ 1 - Desbloqueio de Caminhão\n⚠️ 2 - Abertura de Baú\n⚠️ 3 - Desativar Alarme\n\nPor favor, responda apenas com o número da opção, ou se precisar de algo diferente, entre em contato com a Torre de Controle. 🚀`;
+            const respostaPadrao = `No momento sou apenas um robô feito para te lembrar dos seus carregamentos. Se precisar de suporte, procure pelo time da torre de controle:\n\nhttps://sandwiche.me/contatostorredecontrole\n\nUm abraço!`;
 
             await this.waSocket.sendMessage(from, { text: respostaPadrao });
             this.activeConversations.set(from, { state: ConversationState.WAITING_FOR_OPTION, selectedOption: '' });

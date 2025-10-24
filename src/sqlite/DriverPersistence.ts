@@ -42,7 +42,7 @@ export async function addAlertedDriver(driverName: string): Promise<void> {
             "INSERT OR REPLACE INTO alerted_drivers (driver_name, alert_timestamp) VALUES (?, ?)", // Usando REPLACE para lidar com o caso de re-alerta (se a lógica de 2h mudar)
             [driverName, timestamp]
         );
-        logger.debug(`Motorista ${driverName} persistido.`);
+        logger.debug(`Motorista ${driverName} salvo como motorista avisado.`);
     } catch (error) {
         logger.error(`Erro ao persistir motorista ${driverName}: ${(error as Error).message}`);
     }
