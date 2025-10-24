@@ -39,6 +39,8 @@ class BaileysService {
             // Extrai o corpo da mensagem. Baileys é mais complexo que wweb.js
             const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || '';
             const trimmedBody = body.trim().toUpperCase(); // Padroniza a resposta
+
+            if (!body || body === '') return;
             
             logger.info(`[MENSAGEM RECEBIDA] De: ${from} | Conteúdo: ${trimmedBody}`);
 
